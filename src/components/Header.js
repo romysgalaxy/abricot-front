@@ -29,7 +29,10 @@ function Header({ currentPage, onNavigate }) {
             Projets
           </button>
         </nav>
-        <div className="header-avatar">AD</div>
+        <button
+          className={`header-avatar ${currentPage === 'account' ? 'header-avatar--active' : ''}`}
+          onClick={() => onNavigate('account')}
+        >AD</button>
       </div>
     </header>
   );

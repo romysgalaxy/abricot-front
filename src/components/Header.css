@@ -60,11 +60,23 @@
   height: 40px;
   border-radius: 50%;
   background-color: #FFE8D9;
-  border: 2px solid #e5e5e5;
+  border: 2px solid #FFE8D9;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 600;
   color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.header-avatar:hover {
+  border-color: #e87a3a;
+}
+
+.header-avatar--active {
+  background-color: #e87a3a;
+  color: #fff;
+  border-color: #e87a3a;
 }

@@ -4,6 +4,7 @@ import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import SingleProject from './pages/SingleProject';
+import Account from './pages/Account';
 import './App.css';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'projects' && <Projects onSelectProject={handleSelectProject} />}
         {currentPage === 'single-project' && <SingleProject onBack={handleBackToProjects} />}
+        {currentPage === 'account' && <Account />}
       </main>
       <Footer />
     </div>
