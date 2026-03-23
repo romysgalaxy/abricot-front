@@ -1,23 +1,35 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Dashboard from './pages/Dashboard';
+import Projects from './pages/Projects';
+import SingleProject from './pages/SingleProject';
 import './App.css';
 
 function App() {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleSelectProject = () => {
+    setCurrentPage('single-project');
+  };
+
+  const handleBackToProjects = () => {
+    setCurrentPage('projects');
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header currentPage={currentPage} onNavigate={handleNavigate} />
+      <main className="main-content">
+        {currentPage === 'dashboard' && <Dashboard />}
+        {currentPage === 'projects' && <Projects onSelectProject={handleSelectProject} />}
+        {currentPage === 'single-project' && <SingleProject onBack={handleBackToProjects} />}
+      </main>
+      <Footer />
     </div>
   );
 }
