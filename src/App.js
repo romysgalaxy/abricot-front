@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
@@ -22,15 +23,27 @@ function Layout({ children }) {
   );
 }
 
+function PrivateRoute({ children }) {
+  const { token, loading } = useAuth();
+  if (loading) return null;
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+function PublicRoute({ children }) {
+  const { token, loading } = useAuth();
+  if (loading) return null;
+  return !token ? children : <Navigate to="/dashboard" replace />;
+}
+
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-      <Route path="/projects" element={<Layout><Projects /></Layout>} />
-      <Route path="/projects/:id" element={<Layout><SingleProject /></Layout>} />
-      <Route path="/account" element={<Layout><Account /></Layout>} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+      <Route path="/dashboard" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />
+      <Route path="/projects" element={<PrivateRoute><Layout><Projects /></Layout></PrivateRoute>} />
+      <Route path="/projects/:id" element={<PrivateRoute><Layout><SingleProject /></Layout></PrivateRoute>} />
+      <Route path="/account" element={<PrivateRoute><Layout><Account /></Layout></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { loginUser } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    try {
+      const data = await loginUser(email, password);
+      login(data.user, data.token);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -21,6 +30,8 @@ function Login() {
 
         <div className="login-form-container">
           <h1 className="login-title">Connexion</h1>
+
+          {error && <p className="login-error">{error}</p>}
 
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="login-field">

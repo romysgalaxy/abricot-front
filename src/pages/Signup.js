@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { registerUser } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './Signup.css';
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    try {
+      const data = await registerUser(email, password);
+      login(data.user, data.token);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -21,6 +30,8 @@ function Signup() {
 
         <div className="signup-form-container">
           <h1 className="signup-title">Créer un compte</h1>
+
+          {error && <p className="signup-error">{error}</p>}
 
           <form className="signup-form" onSubmit={handleSubmit}>
             <div className="signup-field">
