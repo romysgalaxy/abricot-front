@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Projects.css';
 
 const projects = Array.from({ length: 9 }, (_, i) => ({
@@ -64,7 +65,13 @@ function ProjectCard({ project, onSelect }) {
   );
 }
 
-function Projects({ onSelectProject }) {
+function Projects() {
+  const navigate = useNavigate();
+
+  const handleSelectProject = (id) => {
+    navigate(`/projects/${id}`);
+  };
+
   return (
     <div className="projects">
       <div className="projects-header">
@@ -80,7 +87,7 @@ function Projects({ onSelectProject }) {
           <ProjectCard
             key={project.id}
             project={project}
-            onSelect={onSelectProject}
+            onSelect={handleSelectProject}
           />
         ))}
       </div>

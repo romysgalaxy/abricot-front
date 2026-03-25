@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
@@ -9,51 +10,29 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import './App.css';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState('login');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  const handleNavigate = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setCurrentPage('dashboard');
-  };
-
-  const handleSignup = () => {
-    setIsLoggedIn(true);
-    setCurrentPage('dashboard');
-  };
-
-  const handleSelectProject = () => {
-    setCurrentPage('single-project');
-  };
-
-  const handleBackToProjects = () => {
-    setCurrentPage('projects');
-  };
-
-  if (!isLoggedIn && currentPage === 'signup') {
-    return <Signup onSignup={handleSignup} onNavigate={handleNavigate} />;
-  }
-
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} onNavigate={handleNavigate} />;
-  }
-
+function Layout({ children }) {
   return (
     <div className="App">
-      <Header currentPage={currentPage} onNavigate={handleNavigate} />
+      <Header />
       <main className="main-content">
-        {currentPage === 'dashboard' && <Dashboard />}
-        {currentPage === 'projects' && <Projects onSelectProject={handleSelectProject} />}
-        {currentPage === 'single-project' && <SingleProject onBack={handleBackToProjects} />}
-        {currentPage === 'account' && <Account />}
+        {children}
       </main>
       <Footer />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+      <Route path="/projects" element={<Layout><Projects /></Layout>} />
+      <Route path="/projects/:id" element={<Layout><SingleProject /></Layout>} />
+      <Route path="/account" element={<Layout><Account /></Layout>} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './SingleProject.css';
 
 const contributors = [
@@ -111,15 +112,16 @@ function TaskItem({ task }) {
   );
 }
 
-function SingleProject({ onBack }) {
+function SingleProject() {
   const [viewMode, setViewMode] = useState('liste');
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   return (
     <div className="single-project">
       <div className="sp-top-header">
         <div className="sp-title-row">
-          <button className="sp-back-btn" onClick={onBack}>
+          <button className="sp-back-btn" onClick={() => navigate('/projects')}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M13 4L7 10L13 16" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

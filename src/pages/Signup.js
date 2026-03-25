@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Signup.css';
 
-function Signup({ onSignup, onNavigate }) {
+function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onSignup) {
-      onSignup({ email, password });
-    }
+    navigate('/dashboard');
   };
 
   return (
@@ -51,16 +51,7 @@ function Signup({ onSignup, onNavigate }) {
 
         <div className="signup-footer">
           <span>Déjà un compte ?</span>{' '}
-          <a
-            href="#login"
-            className="signup-login-link"
-            onClick={(e) => {
-              e.preventDefault();
-              if (onNavigate) onNavigate('login');
-            }}
-          >
-            Se connecter
-          </a>
+          <Link to="/login" className="signup-login-link">Se connecter</Link>
         </div>
       </div>
 
