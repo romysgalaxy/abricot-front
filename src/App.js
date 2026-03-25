@@ -5,13 +5,26 @@ import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import SingleProject from './pages/SingleProject';
 import Account from './pages/Account';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import './App.css';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [currentPage, setCurrentPage] = useState('login');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setCurrentPage('dashboard');
+  };
+
+  const handleSignup = () => {
+    setIsLoggedIn(true);
+    setCurrentPage('dashboard');
   };
 
   const handleSelectProject = () => {
@@ -21,6 +34,14 @@ function App() {
   const handleBackToProjects = () => {
     setCurrentPage('projects');
   };
+
+  if (!isLoggedIn && currentPage === 'signup') {
+    return <Signup onSignup={handleSignup} onNavigate={handleNavigate} />;
+  }
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} onNavigate={handleNavigate} />;
+  }
 
   return (
     <div className="App">

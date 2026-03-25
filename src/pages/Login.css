@@ -1,0 +1,153 @@
+.login {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.login-left {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 60px;
+  background-color: #f5f5f5;
+}
+
+.login-logo img {
+  height: 30px;
+}
+
+.login-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 380px;
+}
+
+.login-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #E55B00;
+  margin: 0 0 32px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.login-input {
+  padding: 14px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a1a1a;
+  background-color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.login-input:focus {
+  border-color: #E55B00;
+}
+
+.login-submit {
+  margin-top: 12px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-submit:hover {
+  background-color: #333;
+}
+
+.login-forgot {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #E55B00;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.login-forgot:hover {
+  color: #c44e00;
+}
+
+.login-footer {
+  font-size: 14px;
+  color: #1a1a1a;
+  padding-top: 40px;
+}
+
+.login-signup-link {
+  color: #E55B00;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.login-signup-link:hover {
+  color: #c44e00;
+}
+
+.login-right {
+  flex: 1;
+  overflow: hidden;
+}
+
+.login-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .login-left {
+    width: 100%;
+    padding: 30px 24px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .login-form-container {
+    align-items: center;
+    width: 100%;
+  }
+
+  .login-form {
+    width: 100%;
+    text-align: left;
+  }
+
+  .login-submit {
+    width: 100%;
+  }
+
+  .login-right {
+    display: none;
+  }
+
+  .login-title {
+    font-size: 26px;
+  }
+}
