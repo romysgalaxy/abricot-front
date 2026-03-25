@@ -1,30 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getProjects } from '../services/api';
 import './Projects.css';
 
-const projects = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  name: 'Nom du projet',
-  description: "Développement de la nouvelle version de l'API REST avec authentification JWT",
-  progress: 0,
-  totalTasks: 2,
-  completedTasks: 0,
-  team: [
-    { initials: 'AD', role: 'Propriétaire' },
-    { initials: 'BD', role: null },
-    { initials: 'CV', role: null },
-  ],
-}));
+function getInitials(user) {
+  if (user.name) {
+    return user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+  return user.email.slice(0, 2).toUpperCase();
+}
 
 function ProjectCard({ project, onSelect }) {
-  const progressPercent = project.totalTasks > 0
-    ? Math.round((project.completedTasks / project.totalTasks) * 100)
+  const totalTasks = project._count?.tasks || 0;
+  const completedTasks = project.tasks
+    ? project.tasks.filter((t) => t.status === 'DONE').length
     : 0;
+  const progressPercent = totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
+    : 0;
+
+  const team = [];
+  if (project.owner) {
+    team.push({ ...project.owner, role: 'Propriétaire' });
+  }
+  if (project.members) {
+    project.members.forEach((m) => {
+      const user = m.user || m;
+      if (!team.find((t) => t.id === user.id)) {
+        team.push(user);
+      }
+    });
+  }
 
   return (
     <div className="project-card" onClick={() => onSelect(project.id)}>
       <h3 className="project-card-name">{project.name}</h3>
-      <p className="project-card-desc">{project.description}</p>
+      <p className="project-card-desc">{project.description || 'Aucune description'}</p>
 
       <div className="project-card-progress">
         <div className="progress-header">
@@ -34,7 +45,7 @@ function ProjectCard({ project, onSelect }) {
         <div className="progress-bar">
           <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
         </div>
-        <span className="progress-detail">{project.completedTasks}/{project.totalTasks} tâches terminées</span>
+        <span className="progress-detail">{completedTasks}/{totalTasks} tâches terminées</span>
       </div>
 
       <div className="project-card-team">
@@ -45,18 +56,18 @@ function ProjectCard({ project, onSelect }) {
             <circle cx="11" cy="5" r="2.5" stroke="#999" strokeWidth="1.2"/>
             <path d="M11 9C13.7614 9 16 11.2386 16 14" stroke="#999" strokeWidth="1.2"/>
           </svg>
-          <span className="team-count">Équipe ({project.team.length})</span>
+          <span className="team-count">Équipe ({team.length})</span>
         </div>
         <div className="team-members">
-          {project.team.filter(m => m.role).map((member, idx) => (
+          {team.filter((m) => m.role).map((member, idx) => (
             <React.Fragment key={idx}>
-              <span className="team-avatar team-avatar--owner">{member.initials}</span>
+              <span className="team-avatar team-avatar--owner">{getInitials(member)}</span>
               <span className="team-role">{member.role}</span>
             </React.Fragment>
           ))}
           <div className="team-others">
-            {project.team.filter(m => !m.role).map((member, idx) => (
-              <span key={idx} className="team-avatar">{member.initials}</span>
+            {team.filter((m) => !m.role).map((member, idx) => (
+              <span key={idx} className="team-avatar">{getInitials(member)}</span>
             ))}
           </div>
         </div>
@@ -67,6 +78,16 @@ function ProjectCard({ project, onSelect }) {
 
 function Projects() {
   const navigate = useNavigate();
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    getProjects()
+      .then((data) => {
+        console.log('API /projects response:', data);
+        setProjects(data.projects || []);
+      })
+      .catch((err) => console.error('Projects error:', err));
+  }, []);
 
   const handleSelectProject = (id) => {
     navigate(`/projects/${id}`);
@@ -83,7 +104,10 @@ function Projects() {
       </div>
 
       <div className="projects-grid">
-        {projects.map(project => (
+        {projects.length === 0 && (
+          <p className="projects-empty">Aucun projet pour le moment</p>
+        )}
+        {projects.map((project) => (
           <ProjectCard
             key={project.id}
             project={project}

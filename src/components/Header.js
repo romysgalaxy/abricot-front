@@ -1,10 +1,21 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Header.css';
+
+function getInitials(user) {
+  if (user.name) {
+    return user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+  return user.email.slice(0, 2).toUpperCase();
+}
 
 function Header() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user } = useAuth();
+
+  const initials = user ? getInitials(user) : '??';
 
   return (
     <header className="header">
@@ -36,7 +47,7 @@ function Header() {
         <Link
           to="/account"
           className={`header-avatar ${currentPath === '/account' ? 'header-avatar--active' : ''}`}
-        >AD</Link>
+        >{initials}</Link>
       </div>
     </header>
   );

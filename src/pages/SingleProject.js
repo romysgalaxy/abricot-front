@@ -1,71 +1,36 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getProject, getTasks } from '../services/api';
 import './SingleProject.css';
 
-const contributors = [
-  { initials: 'AD', name: 'Alice Dupont', role: 'Propriétaire' },
-  { initials: 'BD', name: 'Bertrand Dupont', role: null },
-  { initials: 'AD', name: 'Anne Dupont', role: null },
-];
+const STATUS_MAP = {
+  'TODO': 'À faire',
+  'IN_PROGRESS': 'En cours',
+  'DONE': 'Terminée',
+  'CANCELLED': 'Annulée',
+};
 
-const projectTasks = [
-  {
-    id: 1,
-    name: 'Authentification JWT',
-    description: "Implémenter le système d'authentification avec tokens JWT",
-    status: 'À faire',
-    dueDate: '9 mars',
-    assignees: [
-      { initials: 'BD', name: 'Bertrand Dupont' },
-      { initials: 'AD', name: 'Anne Dupont' },
-    ],
-    commentsCount: 1,
-  },
-  {
-    id: 2,
-    name: 'Authentification JWT',
-    description: "Implémenter le système d'authentification avec tokens JWT",
-    status: 'En cours',
-    dueDate: '9 mars',
-    assignees: [
-      { initials: 'BD', name: 'Bertrand Dupont' },
-      { initials: 'AD', name: 'Anne Dupont' },
-    ],
-    commentsCount: 1,
-  },
-  {
-    id: 3,
-    name: 'Authentification JWT',
-    description: "Implémenter le système d'authentification avec tokens JWT",
-    status: 'Terminée',
-    dueDate: '9 mars',
-    assignees: [
-      { initials: 'BD', name: 'Bertrand Dupont' },
-      { initials: 'AD', name: 'Anne Dupont' },
-    ],
-    commentsCount: 1,
-  },
-  {
-    id: 4,
-    name: 'Authentification JWT',
-    description: "Implémenter le système d'authentification avec tokens JWT",
-    status: 'À faire',
-    dueDate: '9 mars',
-    assignees: [
-      { initials: 'BD', name: 'Bertrand Dupont' },
-      { initials: 'AD', name: 'Anne Dupont' },
-    ],
-    commentsCount: 1,
-  },
-];
+function getInitials(user) {
+  if (user.name) {
+    return user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+  return user.email.slice(0, 2).toUpperCase();
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+}
 
 function StatusBadge({ status }) {
   const classMap = {
-    'À faire': 'sp-status--todo',
-    'En cours': 'sp-status--in-progress',
-    'Terminée': 'sp-status--done',
+    'TODO': 'sp-status--todo',
+    'IN_PROGRESS': 'sp-status--in-progress',
+    'DONE': 'sp-status--done',
+    'CANCELLED': 'sp-status--todo',
   };
-  return <span className={`sp-status ${classMap[status] || ''}`}>{status}</span>;
+  return <span className={`sp-status ${classMap[status] || ''}`}>{STATUS_MAP[status] || status}</span>;
 }
 
 function TaskItem({ task }) {
@@ -74,25 +39,32 @@ function TaskItem({ task }) {
       <div className="sp-task-top">
         <div className="sp-task-info">
           <div className="sp-task-name-row">
-            <h3 className="sp-task-name">{task.name}</h3>
+            <h3 className="sp-task-name">{task.title}</h3>
             <StatusBadge status={task.status} />
           </div>
-          <p className="sp-task-desc">{task.description}</p>
-          <div className="sp-task-meta">
-            <span className="sp-task-meta-item">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
-              Échéance : {task.dueDate}
-            </span>
-          </div>
-          <div className="sp-task-assignees">
-            <span className="sp-task-assignee-label">Assigné à :</span>
-            {task.assignees.map((assignee, idx) => (
-              <span key={idx} className="sp-task-assignee">
-                <span className="sp-task-assignee-avatar">{assignee.initials}</span>
-                <span className="sp-task-assignee-name">{assignee.name}</span>
+          {task.description && <p className="sp-task-desc">{task.description}</p>}
+          {task.dueDate && (
+            <div className="sp-task-meta">
+              <span className="sp-task-meta-item">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
+                Échéance : {formatDate(task.dueDate)}
               </span>
-            ))}
-          </div>
+            </div>
+          )}
+          {task.assignees && task.assignees.length > 0 && (
+            <div className="sp-task-assignees">
+              <span className="sp-task-assignee-label">Assigné à :</span>
+              {task.assignees.map((assignee, idx) => {
+                const user = assignee.user || assignee;
+                return (
+                  <span key={idx} className="sp-task-assignee">
+                    <span className="sp-task-assignee-avatar">{getInitials(user)}</span>
+                    <span className="sp-task-assignee-name">{user.name || user.email}</span>
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </div>
         <button className="sp-task-menu">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -103,7 +75,7 @@ function TaskItem({ task }) {
         </button>
       </div>
       <div className="sp-task-comments">
-        <span>Commentaires ({task.commentsCount})</span>
+        <span>Commentaires ({task.comments ? task.comments.length : 0})</span>
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M4 6L8 10L12 6" stroke="#999" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
@@ -113,9 +85,53 @@ function TaskItem({ task }) {
 }
 
 function SingleProject() {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState('liste');
   const [search, setSearch] = useState('');
-  const navigate = useNavigate();
+  const [project, setProject] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [contributors, setContributors] = useState([]);
+
+  const loadProject = useCallback(async () => {
+    try {
+      const data = await getProject(id);
+      setProject(data.project);
+      const allContributors = [];
+      if (data.project.owner) {
+        allContributors.push({ ...data.project.owner, role: 'Propriétaire' });
+      }
+      if (data.project.members) {
+        data.project.members.forEach((m) => {
+          const user = m.user || m;
+          if (!allContributors.find((existing) => existing.id === user.id)) {
+            allContributors.push(user);
+          }
+        });
+      }
+      setContributors(allContributors);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [id]);
+
+  const loadTasks = useCallback(async () => {
+    try {
+      const data = await getTasks(id);
+      setTasks(data.tasks || []);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadProject();
+    loadTasks();
+  }, [loadProject, loadTasks]);
+
+  const filteredTasks = tasks.filter((t) =>
+    t.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="single-project">
@@ -126,7 +142,7 @@ function SingleProject() {
               <path d="M13 4L7 10L13 16" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <h1 className="sp-title">Nom du projet</h1>
+          <h1 className="sp-title">{project?.name || 'Chargement...'}</h1>
           <button className="sp-edit-btn">Modifier</button>
         </div>
         <div className="sp-actions">
@@ -139,7 +155,7 @@ function SingleProject() {
           </button>
         </div>
       </div>
-      <p className="sp-description">Développement de la nouvelle version de l'API REST avec authentification JWT</p>
+      <p className="sp-description">{project?.description || ''}</p>
 
       <div className="sp-contributors">
         <div className="sp-contributors-header">
@@ -149,9 +165,11 @@ function SingleProject() {
         <div className="sp-contributors-list">
           {contributors.map((c, idx) => (
             <span key={idx} className="sp-contributor">
-              <span className={`sp-contributor-avatar${c.role ? ' sp-contributor-avatar--owner' : ''}`}>{c.initials}</span>
-              {c.role && <span className="sp-contributor-role">{c.role}</span>}
-              <span className="sp-contributor-name">{c.name}</span>
+              <span className={`sp-contributor-avatar${c.role === 'Propriétaire' ? ' sp-contributor-avatar--owner' : ''}`}>
+                {getInitials(c)}
+              </span>
+              {c.role === 'Propriétaire' && <span className="sp-contributor-role">{c.role}</span>}
+              <span className="sp-contributor-name">{c.name || c.email}</span>
             </span>
           ))}
         </div>
@@ -200,11 +218,15 @@ function SingleProject() {
         </div>
 
         <div className="sp-tasks-list">
-          {projectTasks.map(task => (
+          {filteredTasks.length === 0 && (
+            <p className="sp-no-tasks">Aucune tâche pour le moment</p>
+          )}
+          {filteredTasks.map((task) => (
             <TaskItem key={task.id} task={task} />
           ))}
         </div>
       </div>
+
     </div>
   );
 }

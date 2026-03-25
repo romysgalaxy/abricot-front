@@ -1,103 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAssignedTasks } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './Dashboard.css';
 
-const tasks = [
-  { id: 1, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-  { id: 2, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'En cours' },
-  { id: 3, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-  { id: 4, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-  { id: 5, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-  { id: 6, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-];
-
-const kanbanTasks = {
-  'À faire': [
-    { id: 1, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-    { id: 2, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-    { id: 3, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-    { id: 4, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'À faire' },
-  ],
-  'En cours': [
-    { id: 5, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'En cours' },
-    { id: 6, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'En cours' },
-    { id: 7, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'En cours' },
-    { id: 8, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'En cours' },
-  ],
-  'Terminées': [
-    { id: 9, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'Terminée' },
-    { id: 10, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'Terminée' },
-    { id: 11, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'Terminée' },
-    { id: 12, name: 'Nom de la tâche', description: 'Description de la tâche', project: 'Nom du projet', date: '9 mars', comments: 2, status: 'Terminée' },
-  ],
+const STATUS_MAP = {
+  'TODO': 'À faire',
+  'IN_PROGRESS': 'En cours',
+  'DONE': 'Terminée',
+  'CANCELLED': 'Annulée',
 };
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+}
 
 function StatusBadge({ status }) {
   const classMap = {
-    'À faire': 'status-badge--todo',
-    'En cours': 'status-badge--in-progress',
-    'Terminée': 'status-badge--done',
+    'TODO': 'status-badge--todo',
+    'IN_PROGRESS': 'status-badge--in-progress',
+    'DONE': 'status-badge--done',
+    'CANCELLED': 'status-badge--todo',
   };
-  return <span className={`status-badge ${classMap[status] || ''}`}>{status}</span>;
+  const label = STATUS_MAP[status] || status;
+  return <span className={`status-badge ${classMap[status] || ''}`}>{label}</span>;
 }
 
-function TaskCardList({ task }) {
+function TaskCardList({ task, onView }) {
   return (
     <div className="task-card-list">
       <div className="task-card-list-content">
         <div className="task-card-list-info">
-          <h3 className="task-card-list-name">{task.name}</h3>
-          <p className="task-card-list-desc">{task.description}</p>
+          <h3 className="task-card-list-name">{task.title}</h3>
+          <p className="task-card-list-desc">{task.description || ''}</p>
           <div className="task-card-list-meta">
             <span className="meta-item">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 4L1 13C1 13.5523 1.44772 14 2 14H14C14.5523 14 15 13.5523 15 13V6C15 5.44772 14.5523 5 14 5H8L6.5 3H2C1.44772 3 1 3.44772 1 4Z" stroke="#999" strokeWidth="1.5"/></svg>
-              {task.project}
+              {task.project?.name || ''}
             </span>
-            <span className="meta-separator">|</span>
-            <span className="meta-item">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
-              {task.date}
-            </span>
+            {task.dueDate && (
+              <>
+                <span className="meta-separator">|</span>
+                <span className="meta-item">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
+                  {formatDate(task.dueDate)}
+                </span>
+              </>
+            )}
             <span className="meta-separator">|</span>
             <span className="meta-item">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 3C1 2.44772 1.44772 2 2 2H14C14.5523 2 15 2.44772 15 3V11C15 11.5523 14.5523 12 14 12H4L1 15V3Z" stroke="#999" strokeWidth="1.5"/></svg>
-              {task.comments}
+              {task.comments ? task.comments.length : 0}
             </span>
           </div>
         </div>
         <div className="task-card-list-actions">
           <StatusBadge status={task.status} />
-          <button className="btn-voir">Voir</button>
+          <button className="btn-voir" onClick={() => onView(task)}>Voir</button>
         </div>
       </div>
     </div>
   );
 }
 
-function TaskCardKanban({ task }) {
+function TaskCardKanban({ task, onView }) {
   return (
     <div className="task-card-kanban">
       <div className="task-card-kanban-header">
-        <h3 className="task-card-kanban-name">{task.name}</h3>
+        <h3 className="task-card-kanban-name">{task.title}</h3>
         <StatusBadge status={task.status} />
       </div>
-      <p className="task-card-kanban-desc">{task.description}</p>
+      <p className="task-card-kanban-desc">{task.description || ''}</p>
       <div className="task-card-kanban-meta">
         <span className="meta-item">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 4L1 13C1 13.5523 1.44772 14 2 14H14C14.5523 14 15 13.5523 15 13V6C15 5.44772 14.5523 5 14 5H8L6.5 3H2C1.44772 3 1 3.44772 1 4Z" stroke="#999" strokeWidth="1.5"/></svg>
-          {task.project}
+          {task.project?.name || ''}
         </span>
-        <span className="meta-separator">|</span>
-        <span className="meta-item">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
-          {task.date}
-        </span>
+        {task.dueDate && (
+          <>
+            <span className="meta-separator">|</span>
+            <span className="meta-item">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
+              {formatDate(task.dueDate)}
+            </span>
+          </>
+        )}
         <span className="meta-separator">|</span>
         <span className="meta-item">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 3C1 2.44772 1.44772 2 2 2H14C14.5523 2 15 2.44772 15 3V11C15 11.5523 14.5523 12 14 12H4L1 15V3Z" stroke="#999" strokeWidth="1.5"/></svg>
-          {task.comments}
+          {task.comments ? task.comments.length : 0}
         </span>
       </div>
-      <button className="btn-voir">Voir</button>
+      <button className="btn-voir" onClick={() => onView(task)}>Voir</button>
     </div>
   );
 }
@@ -105,15 +101,45 @@ function TaskCardKanban({ task }) {
 function Dashboard() {
   const [view, setView] = useState('liste');
   const [search, setSearch] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getAssignedTasks()
+      .then((data) => {
+        console.log('API /dashboard/assigned-tasks response:', data);
+        setTasks(data.tasks || []);
+      })
+      .catch((err) => console.error('Dashboard error:', err));
+  }, []);
+
+  const userName = user?.name || user?.email || '';
+
+  const filteredTasks = tasks.filter((t) =>
+    t.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const kanbanColumns = {
+    'À faire': filteredTasks.filter((t) => t.status === 'TODO'),
+    'En cours': filteredTasks.filter((t) => t.status === 'IN_PROGRESS'),
+    'Terminées': filteredTasks.filter((t) => t.status === 'DONE'),
+  };
+
+  const handleViewTask = (task) => {
+    if (task.project?.id) {
+      navigate(`/projects/${task.project.id}`);
+    }
+  };
 
   return (
     <div className="dashboard">
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Tableau de bord</h1>
-          <p className="dashboard-subtitle">Bonjour Alice Dupont, voici un aperçu de vos projets et tâches</p>
+          <p className="dashboard-subtitle">Bonjour {userName}, voici un aperçu de vos projets et tâches</p>
         </div>
-        <button className="btn-create">+ Créer un projet</button>
+        <button className="btn-create" onClick={() => navigate('/projects')}>+ Créer un projet</button>
       </div>
 
       <div className="view-toggle">
@@ -152,22 +178,25 @@ function Dashboard() {
             </div>
           </div>
           <div className="task-list">
-            {tasks.map(task => (
-              <TaskCardList key={task.id} task={task} />
+            {filteredTasks.length === 0 && (
+              <p className="task-list-empty">Aucune tâche assignée</p>
+            )}
+            {filteredTasks.map((task) => (
+              <TaskCardList key={task.id} task={task} onView={handleViewTask} />
             ))}
           </div>
         </div>
       ) : (
         <div className="kanban-board">
-          {Object.entries(kanbanTasks).map(([columnName, columnTasks]) => (
+          {Object.entries(kanbanColumns).map(([columnName, columnTasks]) => (
             <div key={columnName} className="kanban-column">
               <div className="kanban-column-header">
                 <h2 className="kanban-column-title">{columnName}</h2>
                 <span className="kanban-column-count">{columnTasks.length}</span>
               </div>
               <div className="kanban-column-cards">
-                {columnTasks.map(task => (
-                  <TaskCardKanban key={task.id} task={task} />
+                {columnTasks.map((task) => (
+                  <TaskCardKanban key={task.id} task={task} onView={handleViewTask} />
                 ))}
               </div>
             </div>
