@@ -159,6 +159,17 @@ export async function createTask(projectId, taskData) {
   return data.data;
 }
 
+export async function updateTask(projectId, taskId, taskData) {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}/tasks/${taskId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(taskData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la mise à jour de la tâche');
+  return data.data;
+}
+
 export async function getTasks(projectId) {
   const res = await fetch(`${PROJECTS_URL}/${projectId}/tasks`, {
     headers: getAuthHeaders(),

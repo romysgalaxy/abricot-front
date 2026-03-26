@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createTask } from '../services/api';
+import { createTask, updateTask } from '../services/api';
 import './CreateTaskModal.css';
 
 function getInitials(user) {
@@ -15,7 +15,8 @@ const STATUSES = [
   { value: 'DONE', label: 'Terminée', className: 'status-option--done' },
 ];
 
-function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers }) {
+function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers, task }) {
+  const isEditMode = !!task;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -29,7 +30,25 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      if (isEditMode) {
+        setTitle(task.title || '');
+        setDescription(task.description || '');
+        setDueDate(task.dueDate ? task.dueDate.slice(0, 10) : '');
+        setStatus(task.status || '');
+        const assignees = (task.assignees || []).map((a) => a.user || a);
+        setSelectedAssignees(assignees);
+      } else {
+        setTitle('');
+        setDescription('');
+        setDueDate('');
+        setStatus('');
+        setSelectedAssignees([]);
+      }
+      setSearchQuery('');
+      setShowDropdown(false);
+      setError('');
+    } else {
       setTitle('');
       setDescription('');
       setDueDate('');
@@ -39,7 +58,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
       setShowDropdown(false);
       setError('');
     }
-  }, [isOpen]);
+  }, [isOpen, isEditMode, task]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -89,13 +108,19 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
 
     setLoading(true);
     try {
-      await createTask(projectId, {
+      const payload = {
         title: title.trim(),
         description: description.trim(),
         dueDate: new Date(dueDate).toISOString(),
         ...(status ? { status } : {}),
         assigneeIds: selectedAssignees.map((a) => a.id),
-      });
+      };
+
+      if (isEditMode) {
+        await updateTask(projectId, task.id, payload);
+      } else {
+        await createTask(projectId, payload);
+      }
       onCreated();
       onClose();
     } catch (err) {
@@ -111,7 +136,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Créer une tâche</h2>
+          <h2 className="modal-title">{isEditMode ? 'Modifier la tâche' : 'Créer une tâche'}</h2>
           <button className="modal-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M5 5L15 15M15 5L5 15" stroke="#666" strokeWidth="2" strokeLinecap="round"/>
@@ -235,7 +260,9 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
 
           <div className="modal-actions">
             <button type="submit" className="btn-submit" disabled={loading || !isFormValid}>
-              {loading ? 'Création...' : 'Créer la tâche'}
+              {loading
+                ? (isEditMode ? 'Modification...' : 'Création...')
+                : (isEditMode ? 'Modifier la tâche' : 'Créer la tâche')}
             </button>
           </div>
         </form>

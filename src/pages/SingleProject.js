@@ -35,7 +35,20 @@ function StatusBadge({ status }) {
   return <span className={`sp-status ${classMap[status] || ''}`}>{STATUS_MAP[status] || status}</span>;
 }
 
-function TaskItem({ task }) {
+function TaskItem({ task, onEdit }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = React.useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="sp-task-item">
       <div className="sp-task-top">
@@ -68,13 +81,25 @@ function TaskItem({ task }) {
             </div>
           )}
         </div>
-        <button className="sp-task-menu">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="5" r="1.5" fill="#999"/>
-            <circle cx="10" cy="10" r="1.5" fill="#999"/>
-            <circle cx="10" cy="15" r="1.5" fill="#999"/>
-          </svg>
-        </button>
+        <div className="sp-task-menu-wrapper" ref={menuRef}>
+          <button className="sp-task-menu" onClick={() => setMenuOpen((prev) => !prev)}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="5" r="1.5" fill="#999"/>
+              <circle cx="10" cy="10" r="1.5" fill="#999"/>
+              <circle cx="10" cy="15" r="1.5" fill="#999"/>
+            </svg>
+          </button>
+          {menuOpen && (
+            <div className="sp-task-dropdown">
+              <button
+                className="sp-task-dropdown-item"
+                onClick={() => { setMenuOpen(false); onEdit(task); }}
+              >
+                Modifier
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <div className="sp-task-comments">
         <span>Commentaires ({task.comments ? task.comments.length : 0})</span>
@@ -96,6 +121,7 @@ function SingleProject() {
   const [contributors, setContributors] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
   const loadProject = useCallback(async () => {
     try {
@@ -150,7 +176,7 @@ function SingleProject() {
           <button className="sp-edit-btn" onClick={() => setShowEditModal(true)}>Modifier</button>
         </div>
         <div className="sp-actions">
-          <button className="btn-create-task" onClick={() => setShowTaskModal(true)}>Créer une tâche</button>
+          <button className="btn-create-task" onClick={() => { setEditingTask(null); setShowTaskModal(true); }}>Créer une tâche</button>
           <button className="btn-ia">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M8 1L9.5 6L15 8L9.5 10L8 15L6.5 10L1 8L6.5 6L8 1Z" fill="currentColor"/>
@@ -226,7 +252,7 @@ function SingleProject() {
             <p className="sp-no-tasks">Aucune tâche pour le moment</p>
           )}
           {filteredTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
+            <TaskItem key={task.id} task={task} onEdit={(t) => { setEditingTask(t); setShowTaskModal(true); }} />
           ))}
         </div>
       </div>
@@ -240,10 +266,11 @@ function SingleProject() {
 
       <CreateTaskModal
         isOpen={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
+        onClose={() => { setShowTaskModal(false); setEditingTask(null); }}
         onCreated={loadTasks}
         projectId={id}
         projectMembers={contributors}
+        task={editingTask}
       />
     </div>
   );

@@ -409,6 +409,41 @@
   background-color: #f5f5f5;
 }
 
+.sp-task-menu-wrapper {
+  position: relative;
+}
+
+.sp-task-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.sp-task-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 14px;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.sp-task-dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
 .sp-task-comments {
   display: flex;
   align-items: center;
