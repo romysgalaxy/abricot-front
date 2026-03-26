@@ -93,6 +93,27 @@ export async function getProject(projectId) {
   return data.data;
 }
 
+export async function createProject(projectData) {
+  const res = await fetch(`${PROJECTS_URL}`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(projectData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la création du projet');
+  return data.data;
+}
+
+export async function searchUsers(query = '') {
+  const params = query ? `?query=${encodeURIComponent(query)}` : '';
+  const res = await fetch(`/users/search${params}`, {
+    headers: getAuthHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la recherche');
+  return data.data;
+}
+
 // --- Tasks ---
 
 export async function getTasks(projectId) {

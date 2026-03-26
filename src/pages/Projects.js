@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjects } from '../services/api';
+import CreateProjectModal from '../components/CreateProjectModal';
 import './Projects.css';
 
 function getInitials(user) {
@@ -79,14 +80,16 @@ function ProjectCard({ project, onSelect }) {
 function Projects() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const loadProjects = () => {
+    getProjects()
+      .then((data) => setProjects(data.projects || []))
+      .catch((err) => console.error('Projects error:', err));
+  };
 
   useEffect(() => {
-    getProjects()
-      .then((data) => {
-        console.log('API /projects response:', data);
-        setProjects(data.projects || []);
-      })
-      .catch((err) => console.error('Projects error:', err));
+    loadProjects();
   }, []);
 
   const handleSelectProject = (id) => {
@@ -100,7 +103,7 @@ function Projects() {
           <h1 className="projects-title">Mes projets</h1>
           <p className="projects-subtitle">Gérez vos projets</p>
         </div>
-        <button className="btn-create">+ Créer un projet</button>
+        <button className="btn-create" onClick={() => setShowCreateModal(true)}>+ Créer un projet</button>
       </div>
 
       <div className="projects-grid">
@@ -115,6 +118,12 @@ function Projects() {
           />
         ))}
       </div>
+
+      <CreateProjectModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={loadProjects}
+      />
     </div>
   );
 }

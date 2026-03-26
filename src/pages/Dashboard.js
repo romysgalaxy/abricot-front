@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAssignedTasks } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import CreateProjectModal from '../components/CreateProjectModal';
 import './Dashboard.css';
 
 const STATUS_MAP = {
@@ -102,16 +103,20 @@ function Dashboard() {
   const [view, setView] = useState('liste');
   const [search, setSearch] = useState('');
   const [tasks, setTasks] = useState([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const loadTasks = () => {
     getAssignedTasks()
       .then((data) => {
-        console.log('API /dashboard/assigned-tasks response:', data);
         setTasks(data.tasks || []);
       })
       .catch((err) => console.error('Dashboard error:', err));
+  };
+
+  useEffect(() => {
+    loadTasks();
   }, []);
 
   const userName = user?.name || user?.email || '';
@@ -139,7 +144,7 @@ function Dashboard() {
           <h1 className="dashboard-title">Tableau de bord</h1>
           <p className="dashboard-subtitle">Bonjour {userName}, voici un aperçu de vos projets et tâches</p>
         </div>
-        <button className="btn-create" onClick={() => navigate('/projects')}>+ Créer un projet</button>
+        <button className="btn-create" onClick={() => setShowCreateModal(true)}>+ Créer un projet</button>
       </div>
 
       <div className="view-toggle">
@@ -203,6 +208,11 @@ function Dashboard() {
           ))}
         </div>
       )}
+      <CreateProjectModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={loadTasks}
+      />
     </div>
   );
 }
