@@ -1,0 +1,195 @@
+.projects {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 40px 0;
+}
+
+.projects-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.projects-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.projects-subtitle {
+  font-size: 15px;
+  color: #666;
+  margin: 0;
+}
+
+.btn-create {
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn-create:hover {
+  background-color: #333;
+}
+
+/* Projects Grid */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Project Card */
+.project-card {
+  border: 1px solid #e5e5e5;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.project-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.project-card-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.project-card-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* Progress */
+.project-card-progress {
+  margin-bottom: 20px;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: #999;
+}
+
+.progress-percent {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: #f0f0f0;
+  border-radius: 2px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #e87a3a;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.progress-detail {
+  font-size: 12px;
+  color: #bbb;
+}
+
+/* Team */
+.project-card-team {
+  padding-top: 16px;
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.team-count {
+  font-size: 13px;
+  color: #999;
+}
+
+.team-members {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a1a1a;
+  border: 2px solid #fff;
+}
+
+.team-avatar--owner {
+  background-color: #fff0e6;
+  color: #1a1a1a;
+}
+
+.team-role {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 14px;
+  background-color: #fff0e6;
+  color: #e87a3a;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.team-others {
+  display: flex;
+  align-items: center;
+}
+
+.team-others .team-avatar {
+  margin-left: -8px;
+}
+
+.team-others .team-avatar:first-child {
+  margin-left: 0;
+}
+
+.projects-empty {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+  padding: 40px 0;
+  margin: 0;
+}
