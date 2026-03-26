@@ -35,8 +35,15 @@ function StatusBadge({ status }) {
   return <span className={`sp-status ${classMap[status] || ''}`}>{STATUS_MAP[status] || status}</span>;
 }
 
+function formatDateTime(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 function TaskItem({ task, onEdit }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const menuRef = React.useRef(null);
 
   useEffect(() => {
@@ -48,6 +55,8 @@ function TaskItem({ task, onEdit }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const comments = task.comments || [];
 
   return (
     <div className="sp-task-item">
@@ -101,12 +110,33 @@ function TaskItem({ task, onEdit }) {
           )}
         </div>
       </div>
-      <div className="sp-task-comments">
-        <span>Commentaires ({task.comments ? task.comments.length : 0})</span>
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <div
+        className={`sp-task-comments${commentsOpen ? ' sp-task-comments--open' : ''}`}
+        onClick={() => setCommentsOpen((prev) => !prev)}
+      >
+        <span>Commentaires ({comments.length})</span>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className={commentsOpen ? 'sp-comments-arrow--open' : ''}>
           <path d="M4 6L8 10L12 6" stroke="#999" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
       </div>
+      {commentsOpen && (
+        <div className="sp-comments-list">
+          {comments.length === 0 ? (
+            <p className="sp-comments-empty">Aucun commentaire</p>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="sp-comment">
+                <div className="sp-comment-header">
+                  <span className="sp-comment-avatar">{getInitials(comment.author)}</span>
+                  <span className="sp-comment-author">{comment.author.name || comment.author.email}</span>
+                  <span className="sp-comment-date">{formatDateTime(comment.createdAt)}</span>
+                </div>
+                <p className="sp-comment-content">{comment.content}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

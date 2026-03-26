@@ -460,6 +460,79 @@
   color: #666;
 }
 
+.sp-task-comments svg {
+  transition: transform 0.2s;
+}
+
+.sp-task-comments svg.sp-comments-arrow--open {
+  transform: rotate(180deg);
+}
+
+.sp-task-comments--open {
+  color: #1a1a1a;
+}
+
+/* Comments List */
+.sp-comments-list {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sp-comments-empty {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.sp-comment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sp-comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-comment-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.sp-comment-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.sp-comment-date {
+  font-size: 12px;
+  color: #999;
+}
+
+.sp-comment-content {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+  margin: 0;
+  padding-left: 36px;
+}
+
 .sp-no-tasks {
   text-align: center;
   color: #999;
