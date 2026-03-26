@@ -148,6 +148,17 @@ export async function searchUsers(query = '') {
 
 // --- Tasks ---
 
+export async function createTask(projectId, taskData) {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}/tasks`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(taskData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la création de la tâche');
+  return data.data;
+}
+
 export async function getTasks(projectId) {
   const res = await fetch(`${PROJECTS_URL}/${projectId}/tasks`, {
     headers: getAuthHeaders(),

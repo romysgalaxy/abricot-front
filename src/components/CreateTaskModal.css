@@ -1,0 +1,44 @@
+/* Status Selector */
+.status-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.status-option {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, opacity 0.15s;
+  opacity: 0.5;
+}
+
+.status-option--selected {
+  opacity: 1;
+  border-color: currentColor;
+}
+
+.status-option--todo {
+  background-color: #fde8e8;
+  color: #dc2626;
+}
+
+.status-option--in-progress {
+  background-color: #fff0e6;
+  color: #e87a3a;
+}
+
+.status-option--done {
+  background-color: #e6f7e6;
+  color: #2da52d;
+}
+
+.status-option:hover {
+  opacity: 0.8;
+}
+
+.status-option--selected:hover {
+  opacity: 1;
+}

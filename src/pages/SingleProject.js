@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProject, getTasks } from '../services/api';
 import CreateProjectModal from '../components/CreateProjectModal';
+import CreateTaskModal from '../components/CreateTaskModal';
 import './SingleProject.css';
 
 const STATUS_MAP = {
@@ -94,6 +95,7 @@ function SingleProject() {
   const [tasks, setTasks] = useState([]);
   const [contributors, setContributors] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   const loadProject = useCallback(async () => {
     try {
@@ -148,7 +150,7 @@ function SingleProject() {
           <button className="sp-edit-btn" onClick={() => setShowEditModal(true)}>Modifier</button>
         </div>
         <div className="sp-actions">
-          <button className="btn-create-task">Créer une tâche</button>
+          <button className="btn-create-task" onClick={() => setShowTaskModal(true)}>Créer une tâche</button>
           <button className="btn-ia">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M8 1L9.5 6L15 8L9.5 10L8 15L6.5 10L1 8L6.5 6L8 1Z" fill="currentColor"/>
@@ -234,6 +236,14 @@ function SingleProject() {
         onClose={() => setShowEditModal(false)}
         onCreated={() => { loadProject(); loadTasks(); }}
         project={project}
+      />
+
+      <CreateTaskModal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        onCreated={loadTasks}
+        projectId={id}
+        projectMembers={contributors}
       />
     </div>
   );
