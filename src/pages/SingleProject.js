@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getProject, getTasks } from '../services/api';
+import CreateProjectModal from '../components/CreateProjectModal';
 import './SingleProject.css';
 
 const STATUS_MAP = {
@@ -92,6 +93,7 @@ function SingleProject() {
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [contributors, setContributors] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const loadProject = useCallback(async () => {
     try {
@@ -143,7 +145,7 @@ function SingleProject() {
             </svg>
           </button>
           <h1 className="sp-title">{project?.name || 'Chargement...'}</h1>
-          <button className="sp-edit-btn">Modifier</button>
+          <button className="sp-edit-btn" onClick={() => setShowEditModal(true)}>Modifier</button>
         </div>
         <div className="sp-actions">
           <button className="btn-create-task">Créer une tâche</button>
@@ -227,6 +229,12 @@ function SingleProject() {
         </div>
       </div>
 
+      <CreateProjectModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onCreated={() => { loadProject(); loadTasks(); }}
+        project={project}
+      />
     </div>
   );
 }

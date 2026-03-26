@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createProject, searchUsers } from '../services/api';
+import { createProject, updateProject, addContributor, removeContributor, searchUsers } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import './CreateProjectModal.css';
 
 function getInitials(user) {
@@ -9,10 +10,13 @@ function getInitials(user) {
   return user.email.slice(0, 2).toUpperCase();
 }
 
-function CreateProjectModal({ isOpen, onClose, onCreated }) {
+function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
+  const { user: currentUser } = useAuth();
+  const isEditMode = !!project;
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedContributors, setSelectedContributors] = useState([]);
+  const [initialContributors, setInitialContributors] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [allUsers, setAllUsers] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -25,16 +29,32 @@ function CreateProjectModal({ isOpen, onClose, onCreated }) {
   useEffect(() => {
     if (isOpen) {
       searchUsers().then((data) => setAllUsers(data.users || [])).catch(() => {});
+      if (isEditMode) {
+        setName(project.name || '');
+        setDescription(project.description || '');
+        const members = (project.members || []).map((m) => m.user || m);
+        setSelectedContributors(members);
+        setInitialContributors(members);
+      } else {
+        setName('');
+        setDescription('');
+        setSelectedContributors([]);
+        setInitialContributors([]);
+      }
+      setSearchQuery('');
+      setShowDropdown(false);
+      setError('');
     } else {
       setName('');
       setDescription('');
       setSelectedContributors([]);
+      setInitialContributors([]);
       setSearchQuery('');
       setAllUsers([]);
       setShowDropdown(false);
       setError('');
     }
-  }, [isOpen]);
+  }, [isOpen, isEditMode, project]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -66,7 +86,7 @@ function CreateProjectModal({ isOpen, onClose, onCreated }) {
   }, [searchQuery]);
 
   const availableUsers = allUsers.filter(
-    (u) => !selectedContributors.find((c) => c.id === u.id)
+    (u) => u.id !== currentUser?.id && !selectedContributors.find((c) => c.id === u.id)
   );
 
   const handleToggleDropdown = async () => {
@@ -105,11 +125,30 @@ function CreateProjectModal({ isOpen, onClose, onCreated }) {
 
     setLoading(true);
     try {
-      await createProject({
-        name: name.trim(),
-        description: description.trim(),
-        contributors: selectedContributors.map((c) => c.email),
-      });
+      if (isEditMode) {
+        await updateProject(project.id, {
+          name: name.trim(),
+          description: description.trim(),
+        });
+
+        const ownerId = currentUser?.id;
+        const initialIds = new Set(initialContributors.map((c) => c.id));
+        const selectedIds = new Set(selectedContributors.map((c) => c.id));
+
+        const toAdd = selectedContributors.filter((c) => c.id !== ownerId && !initialIds.has(c.id));
+        const toRemove = initialContributors.filter((c) => c.id !== ownerId && !selectedIds.has(c.id));
+
+        await Promise.all([
+          ...toAdd.map((c) => addContributor(project.id, c.email)),
+          ...toRemove.map((c) => removeContributor(project.id, c.id)),
+        ]);
+      } else {
+        await createProject({
+          name: name.trim(),
+          description: description.trim(),
+          contributors: selectedContributors.map((c) => c.email),
+        });
+      }
       onCreated();
       onClose();
     } catch (err) {
@@ -125,7 +164,7 @@ function CreateProjectModal({ isOpen, onClose, onCreated }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Créer un projet</h2>
+          <h2 className="modal-title">{isEditMode ? 'Modifier le projet' : 'Créer un projet'}</h2>
           <button className="modal-close" onClick={onClose}>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M5 5L15 15M15 5L5 15" stroke="#666" strokeWidth="2" strokeLinecap="round"/>
@@ -162,21 +201,26 @@ function CreateProjectModal({ isOpen, onClose, onCreated }) {
             <label className="modal-label">Collaborateurs</label>
             <div className="contributors-select">
               <div className="contributors-input-wrapper">
-                {selectedContributors.map((c) => (
-                  <span key={c.id} className="contributor-tag">
-                    <span className="contributor-tag-avatar">{getInitials(c)}</span>
-                    <span className="contributor-tag-name">{c.name || c.email}</span>
-                    <button
-                      type="button"
-                      className="contributor-tag-remove"
-                      onClick={() => handleRemoveContributor(c.id)}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  </span>
-                ))}
+                {selectedContributors.map((c) => {
+                  const isOwner = c.id === currentUser?.id;
+                  return (
+                    <span key={c.id} className={`contributor-tag${isOwner ? ' contributor-tag--owner' : ''}`}>
+                      <span className="contributor-tag-avatar">{getInitials(c)}</span>
+                      <span className="contributor-tag-name">{c.name || c.email}</span>
+                      {!isOwner && (
+                        <button
+                          type="button"
+                          className="contributor-tag-remove"
+                          onClick={() => handleRemoveContributor(c.id)}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          </svg>
+                        </button>
+                      )}
+                    </span>
+                  );
+                })}
                 <input
                   ref={inputRef}
                   type="text"
@@ -220,7 +264,7 @@ function CreateProjectModal({ isOpen, onClose, onCreated }) {
 
           <div className="modal-actions">
             <button type="submit" className="btn-submit" disabled={loading || !name.trim() || !description.trim()}>
-              {loading ? 'Création...' : 'Créer le projet'}
+              {loading ? (isEditMode ? 'Modification...' : 'Création...') : (isEditMode ? 'Modifier le projet' : 'Créer le projet')}
             </button>
           </div>
         </form>

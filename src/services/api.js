@@ -104,6 +104,38 @@ export async function createProject(projectData) {
   return data.data;
 }
 
+export async function updateProject(projectId, projectData) {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(projectData),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la mise à jour du projet');
+  return data.data;
+}
+
+export async function addContributor(projectId, email, role = 'CONTRIBUTOR') {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}/contributors`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ email, role }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "Erreur lors de l'ajout du contributeur");
+  return data.data;
+}
+
+export async function removeContributor(projectId, userId) {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}/contributors/${userId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors du retrait du contributeur');
+  return data.data;
+}
+
 export async function searchUsers(query = '') {
   const params = query ? `?query=${encodeURIComponent(query)}` : '';
   const res = await fetch(`/users/search${params}`, {
