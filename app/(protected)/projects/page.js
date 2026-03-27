@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getProjects } from '../../../services/api';
+import { getProjects, getTasks } from '../../../services/api';
 import CreateProjectModal from '../../../components/CreateProjectModal';
 import styles from './Projects.module.css';
 
@@ -14,10 +14,9 @@ function getInitials(user) {
 }
 
 function ProjectCard({ project, onSelect }) {
-  const totalTasks = project._count?.tasks || 0;
-  const completedTasks = project.tasks
-    ? project.tasks.filter((t) => t.status === 'DONE').length
-    : 0;
+  const tasks = project.tasks || [];
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === 'DONE').length;
   const progressPercent = totalTasks > 0
     ? Math.round((completedTasks / totalTasks) * 100)
     : 0;
@@ -84,10 +83,24 @@ export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const loadProjects = () => {
-    getProjects()
-      .then((data) => setProjects(data.projects || []))
-      .catch((err) => console.error('Projects error:', err));
+  const loadProjects = async () => {
+    try {
+      const data = await getProjects();
+      const projectsList = data.projects || [];
+      const projectsWithTasks = await Promise.all(
+        projectsList.map(async (project) => {
+          try {
+            const tasksData = await getTasks(project.id);
+            return { ...project, tasks: tasksData.tasks || [] };
+          } catch {
+            return { ...project, tasks: [] };
+          }
+        })
+      );
+      setProjects(projectsWithTasks);
+    } catch (err) {
+      console.error('Projects error:', err);
+    }
   };
 
   useEffect(() => {
