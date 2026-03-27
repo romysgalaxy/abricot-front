@@ -568,6 +568,14 @@
   background-color: #f5f5f5;
 }
 
+.sp-task-dropdown-item--danger {
+  color: #dc2626;
+}
+
+.sp-task-dropdown-item--danger:hover {
+  background-color: #fef2f2;
+}
+
 .sp-task-comments {
   display: flex;
   align-items: center;

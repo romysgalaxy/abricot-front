@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getProject, getTasks, deleteProject } from '../../../../services/api';
+import { getProject, getTasks, deleteProject, deleteTask } from '../../../../services/api';
 import { useAuth } from '../../../../context/AuthContext';
 import CreateProjectModal from '../../../../components/CreateProjectModal';
 import CreateTaskModal from '../../../../components/CreateTaskModal';
@@ -44,9 +44,11 @@ function formatDateTime(dateStr) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-function TaskItem({ task, onEdit }) {
+function TaskItem({ task, onEdit, onDelete }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const menuRef = React.useRef(null);
 
   useEffect(() => {
@@ -109,6 +111,12 @@ function TaskItem({ task, onEdit }) {
               >
                 Modifier
               </button>
+              <button
+                className={`${styles['sp-task-dropdown-item']} ${styles['sp-task-dropdown-item--danger']}`}
+                onClick={() => { setMenuOpen(false); setShowDeleteConfirm(true); }}
+              >
+                Supprimer
+              </button>
             </div>
           )}
         </div>
@@ -138,6 +146,37 @@ function TaskItem({ task, onEdit }) {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className={styles['delete-overlay']} onClick={() => setShowDeleteConfirm(false)}>
+          <div className={styles['delete-dialog']} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles['delete-dialog-title']}>Supprimer la tâche</h3>
+            <p className={styles['delete-dialog-text']}>
+              Êtes-vous sûr de vouloir supprimer <strong>{task.title}</strong> ? Cette action est irréversible.
+            </p>
+            <div className={styles['delete-dialog-actions']}>
+              <button className={styles['delete-dialog-cancel']} onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+                Annuler
+              </button>
+              <button
+                className={styles['delete-dialog-confirm']}
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    await onDelete(task.id);
+                  } catch {
+                    setDeleting(false);
+                    setShowDeleteConfirm(false);
+                  }
+                }}
+              >
+                {deleting ? 'Suppression...' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -308,7 +347,12 @@ export default function SingleProject() {
             <p className={styles['sp-no-tasks']}>Aucune tâche pour le moment</p>
           )}
           {filteredTasks.map((task) => (
-            <TaskItem key={task.id} task={task} onEdit={(t) => { setEditingTask(t); setShowTaskModal(true); }} />
+            <TaskItem
+              key={task.id}
+              task={task}
+              onEdit={(t) => { setEditingTask(t); setShowTaskModal(true); }}
+              onDelete={async (taskId) => { await deleteTask(id, taskId); loadTasks(); }}
+            />
           ))}
         </div>
       </div>
