@@ -118,7 +118,7 @@ export default function Projects() {
           <h1 className={styles['projects-title']}>Mes projets</h1>
           <p className={styles['projects-subtitle']}>Gérez vos projets</p>
         </div>
-        <button className={styles['btn-create']} onClick={() => setShowCreateModal(true)}>+ Créer un projet</button>
+        <button className={styles['btn-create']} onClick={() => setShowCreateModal(true)}><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg> Créer un projet</button>
       </div>
 
       <div className={styles['projects-grid']}>

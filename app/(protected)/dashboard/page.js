@@ -146,7 +146,7 @@ export default function Dashboard() {
           <h1 className={styles['dashboard-title']}>Tableau de bord</h1>
           <p className={styles['dashboard-subtitle']}>Bonjour {userName}, voici un aperçu de vos projets et tâches</p>
         </div>
-        <button className={styles['btn-create']} onClick={() => setShowCreateModal(true)}>+ Créer un projet</button>
+        <button className={styles['btn-create']} onClick={() => setShowCreateModal(true)}><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg> Créer un projet</button>
       </div>
 
       <div className={styles['view-toggle']}>

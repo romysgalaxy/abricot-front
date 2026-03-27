@@ -115,6 +115,16 @@ export async function updateProject(projectId, projectData) {
   return data.data;
 }
 
+export async function deleteProject(projectId) {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la suppression du projet');
+  return data.data;
+}
+
 export async function addContributor(projectId, email, role = 'CONTRIBUTOR') {
   const res = await fetch(`${PROJECTS_URL}/${projectId}/contributors`, {
     method: 'POST',

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getProject, getTasks } from '../../../../services/api';
+import { getProject, getTasks, deleteProject } from '../../../../services/api';
+import { useAuth } from '../../../../context/AuthContext';
 import CreateProjectModal from '../../../../components/CreateProjectModal';
 import CreateTaskModal from '../../../../components/CreateTaskModal';
 import styles from './SingleProject.module.css';
@@ -146,6 +147,7 @@ function TaskItem({ task, onEdit }) {
 export default function SingleProject() {
   const { id } = useParams();
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const [viewMode, setViewMode] = useState('liste');
   const [search, setSearch] = useState('');
   const [project, setProject] = useState(null);
@@ -155,6 +157,8 @@ export default function SingleProject() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const loadProject = useCallback(async () => {
     try {
@@ -198,6 +202,20 @@ export default function SingleProject() {
     t.title.toLowerCase().includes(search.toLowerCase())
   );
 
+  const isOwner = project?.owner?.id === currentUser?.id;
+
+  const handleDeleteProject = async () => {
+    setDeleting(true);
+    try {
+      await deleteProject(id);
+      router.push('/projects');
+    } catch (err) {
+      console.error(err);
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   return (
     <div className={styles['single-project']}>
       <div className={styles['sp-top-header']}>
@@ -209,6 +227,9 @@ export default function SingleProject() {
           </button>
           <h1 className={styles['sp-title']}>{project?.name || 'Chargement...'}</h1>
           <button className={styles['sp-edit-btn']} onClick={() => setShowEditModal(true)}>Modifier</button>
+          {isOwner && (
+            <button className={styles['sp-delete-btn']} onClick={() => setShowDeleteConfirm(true)}>Supprimer</button>
+          )}
         </div>
         <div className={styles['sp-actions']}>
           <button className={styles['btn-create-task']} onClick={() => { setEditingTask(null); setShowTaskModal(true); }}>Créer une tâche</button>
@@ -307,6 +328,25 @@ export default function SingleProject() {
         projectMembers={taskAssignableMembers}
         task={editingTask}
       />
+
+      {showDeleteConfirm && (
+        <div className={styles['delete-overlay']} onClick={() => setShowDeleteConfirm(false)}>
+          <div className={styles['delete-dialog']} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles['delete-dialog-title']}>Supprimer le projet</h3>
+            <p className={styles['delete-dialog-text']}>
+              Êtes-vous sûr de vouloir supprimer <strong>{project?.name}</strong> ? Toutes les tâches associées seront également supprimées. Cette action est irréversible.
+            </p>
+            <div className={styles['delete-dialog-actions']}>
+              <button className={styles['delete-dialog-cancel']} onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+                Annuler
+              </button>
+              <button className={styles['delete-dialog-confirm']} onClick={handleDeleteProject} disabled={deleting}>
+                {deleting ? 'Suppression...' : 'Supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
