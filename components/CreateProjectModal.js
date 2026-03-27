@@ -30,7 +30,6 @@ function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
 
   useEffect(() => {
     if (isOpen) {
-      searchUsers().then((data) => setAllUsers(data.users || [])).catch(() => {});
       if (isEditMode) {
         setName(project.name || '');
         setDescription(project.description || '');
@@ -44,6 +43,7 @@ function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
         setInitialContributors([]);
       }
       setSearchQuery('');
+      setAllUsers([]);
       setShowDropdown(false);
       setError('');
     } else {
@@ -91,17 +91,10 @@ function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
     (u) => u.id !== currentUser?.id && !selectedContributors.find((c) => c.id === u.id)
   );
 
-  const handleToggleDropdown = async () => {
-    if (showDropdown) {
-      setShowDropdown(false);
-      return;
-    }
-    try {
-      const data = await searchUsers();
-      setAllUsers(data.users || []);
-      setShowDropdown(true);
-    } catch {
-      // ignore
+  const handleToggleDropdown = () => {
+    setShowDropdown((prev) => !prev);
+    if (!showDropdown) {
+      inputRef.current?.focus();
     }
   };
 
@@ -230,9 +223,7 @@ function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
                   placeholder={selectedContributors.length === 0 ? 'Rechercher un utilisateur...' : ''}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => {
-                    if (availableUsers.length > 0) setShowDropdown(true);
-                  }}
+                  onFocus={() => setShowDropdown(true)}
                 />
               </div>
               <button
@@ -245,21 +236,31 @@ function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
                 </svg>
               </button>
             </div>
-            {showDropdown && availableUsers.length > 0 && (
+            {showDropdown && (
               <div className={styles['contributors-dropdown']}>
-                {availableUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className={styles['contributors-dropdown-item']}
-                    onClick={() => handleAddContributor(user)}
-                  >
-                    <span className={styles['contributors-dropdown-avatar']}>{getInitials(user)}</span>
-                    <div className={styles['contributors-dropdown-info']}>
-                      <span className={styles['contributors-dropdown-name']}>{user.name || 'Sans nom'}</span>
-                      <span className={styles['contributors-dropdown-email']}>{user.email}</span>
-                    </div>
+                {searchQuery.length < 2 ? (
+                  <div className={styles['contributors-dropdown-hint']}>
+                    Tapez au moins 2 caractères pour rechercher un utilisateur...
                   </div>
-                ))}
+                ) : availableUsers.length > 0 ? (
+                  availableUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className={styles['contributors-dropdown-item']}
+                      onClick={() => handleAddContributor(user)}
+                    >
+                      <span className={styles['contributors-dropdown-avatar']}>{getInitials(user)}</span>
+                      <div className={styles['contributors-dropdown-info']}>
+                        <span className={styles['contributors-dropdown-name']}>{user.name || 'Sans nom'}</span>
+                        <span className={styles['contributors-dropdown-email']}>{user.email}</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className={styles['contributors-dropdown-hint']}>
+                    Aucun utilisateur trouvé
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -79,7 +79,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
     (u) => !selectedAssignees.find((c) => c.id === u.id)
   );
 
-  const filteredMembers = searchQuery.length >= 2
+  const filteredMembers = searchQuery.trim()
     ? availableMembers.filter((u) => {
         const q = searchQuery.toLowerCase();
         return (u.name && u.name.toLowerCase().includes(q)) || u.email.toLowerCase().includes(q);
@@ -227,9 +227,7 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
                     setSearchQuery(e.target.value);
                     setShowDropdown(true);
                   }}
-                  onFocus={() => {
-                    if (filteredMembers.length > 0) setShowDropdown(true);
-                  }}
+                  onFocus={() => setShowDropdown(true)}
                 />
               </div>
               <button
@@ -242,21 +240,27 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
                 </svg>
               </button>
             </div>
-            {showDropdown && filteredMembers.length > 0 && (
+            {showDropdown && (
               <div className={modalStyles['contributors-dropdown']}>
-                {filteredMembers.map((user) => (
-                  <div
-                    key={user.id}
-                    className={modalStyles['contributors-dropdown-item']}
-                    onClick={() => handleAddAssignee(user)}
-                  >
-                    <span className={modalStyles['contributors-dropdown-avatar']}>{getInitials(user)}</span>
-                    <div className={modalStyles['contributors-dropdown-info']}>
-                      <span className={modalStyles['contributors-dropdown-name']}>{user.name || 'Sans nom'}</span>
-                      <span className={modalStyles['contributors-dropdown-email']}>{user.email}</span>
+                {filteredMembers.length > 0 ? (
+                  filteredMembers.map((user) => (
+                    <div
+                      key={user.id}
+                      className={modalStyles['contributors-dropdown-item']}
+                      onClick={() => handleAddAssignee(user)}
+                    >
+                      <span className={modalStyles['contributors-dropdown-avatar']}>{getInitials(user)}</span>
+                      <div className={modalStyles['contributors-dropdown-info']}>
+                        <span className={modalStyles['contributors-dropdown-name']}>{user.name || 'Sans nom'}</span>
+                        <span className={modalStyles['contributors-dropdown-email']}>{user.email}</span>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className={modalStyles['contributors-dropdown-hint']}>
+                    Aucun membre trouvé
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>

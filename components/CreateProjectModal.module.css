@@ -287,6 +287,13 @@
   white-space: nowrap;
 }
 
+.contributors-dropdown-hint {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #999;
+  text-align: center;
+}
+
 /* Modal Actions */
 .modal-actions {
   display: flex;

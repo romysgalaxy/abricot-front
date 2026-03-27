@@ -151,6 +151,7 @@ export default function SingleProject() {
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [contributors, setContributors] = useState([]);
+  const [taskAssignableMembers, setTaskAssignableMembers] = useState([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
@@ -172,6 +173,8 @@ export default function SingleProject() {
         });
       }
       setContributors(allContributors);
+      const membersOnly = (data.project.members || []).map((m) => m.user || m);
+      setTaskAssignableMembers(membersOnly);
     } catch (err) {
       console.error(err);
     }
@@ -301,7 +304,7 @@ export default function SingleProject() {
         onClose={() => { setShowTaskModal(false); setEditingTask(null); }}
         onCreated={loadTasks}
         projectId={id}
-        projectMembers={contributors}
+        projectMembers={taskAssignableMembers}
         task={editingTask}
       />
     </div>
