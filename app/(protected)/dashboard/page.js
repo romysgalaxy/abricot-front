@@ -123,9 +123,14 @@ export default function Dashboard() {
 
   const userName = user?.name || user?.email || '';
 
-  const filteredTasks = tasks.filter((t) =>
-    t.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTasks = tasks
+    .filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    });
 
   const kanbanColumns = {
     'À faire': filteredTasks.filter((t) => t.status === 'TODO'),
