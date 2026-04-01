@@ -44,7 +44,7 @@ function formatDateTime(dateStr) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-function TaskItem({ task, projectId, onEdit, onDelete, onCommentAdded }) {
+function TaskItem({ task, projectId, userRole, onEdit, onDelete, onCommentAdded }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -298,6 +298,8 @@ export default function SingleProject() {
   );
 
   const isOwner = project?.owner?.id === currentUser?.id;
+  const userRole = project?.userRole || null;
+  const isAdmin = userRole === 'ADMIN';
 
   const handleDeleteProject = async () => {
     setDeleting(true);
@@ -321,7 +323,9 @@ export default function SingleProject() {
             </svg>
           </button>
           <h1 className={styles['sp-title']}>{project?.name || 'Chargement...'}</h1>
-          <button className={styles['sp-edit-btn']} onClick={() => setShowEditModal(true)}>Modifier</button>
+          {isAdmin && (
+            <button className={styles['sp-edit-btn']} onClick={() => setShowEditModal(true)}>Modifier</button>
+          )}
           {isOwner && (
             <button className={styles['sp-delete-btn']} onClick={() => setShowDeleteConfirm(true)}>Supprimer</button>
           )}
@@ -407,6 +411,7 @@ export default function SingleProject() {
               key={task.id}
               task={task}
               projectId={id}
+              userRole={userRole}
               onEdit={(t) => { setEditingTask(t); setShowTaskModal(true); }}
               onDelete={async (taskId) => { await deleteTask(id, taskId); loadTasks(); }}
               onCommentAdded={loadTasks}
