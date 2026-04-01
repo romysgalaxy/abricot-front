@@ -7,6 +7,7 @@ import { useAuth } from '../../../context/AuthContext';
 import CreateProjectModal from '../../../components/CreateProjectModal';
 import styles from './Dashboard.module.css';
 
+// Correspondance des statuts techniques vers leurs labels en français
 const STATUS_MAP = {
   'TODO': 'À faire',
   'IN_PROGRESS': 'En cours',
@@ -14,12 +15,14 @@ const STATUS_MAP = {
   'CANCELLED': 'Annulée',
 };
 
+// Formate une date ISO en format français lisible (ex: "5 avril")
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 }
 
+// Badge coloré affichant le statut d'une tâche (À faire, En cours, Terminée)
 function StatusBadge({ status }) {
   const classMap = {
     'TODO': 'status-badge--todo',
@@ -31,6 +34,7 @@ function StatusBadge({ status }) {
   return <span className={`${styles['status-badge']} ${styles[classMap[status]] || ''}`}>{label}</span>;
 }
 
+// Carte tâche pour la vue liste : affiche titre, description, projet, échéance, commentaires
 function TaskCardList({ task, onView }) {
   return (
     <div className={styles['task-card-list']}>
@@ -68,6 +72,7 @@ function TaskCardList({ task, onView }) {
   );
 }
 
+// Carte tâche pour la vue kanban : version compacte avec statut et métadonnées
 function TaskCardKanban({ task, onView }) {
   return (
     <div className={styles['task-card-kanban']}>
@@ -101,6 +106,7 @@ function TaskCardKanban({ task, onView }) {
   );
 }
 
+// Page Dashboard : 3 vues (liste, kanban, projets) des tâches assignées à l'utilisateur
 export default function Dashboard() {
   const [view, setView] = useState('liste');
   const [search, setSearch] = useState('');
@@ -109,6 +115,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const router = useRouter();
 
+  // Charge les tâches assignées depuis l'API
   const loadTasks = () => {
     getAssignedTasks()
       .then((data) => {
@@ -123,6 +130,7 @@ export default function Dashboard() {
 
   const userName = user?.name || user?.email || '';
 
+  // Filtre par recherche et trie par date d'échéance (les plus urgentes en premier)
   const filteredTasks = tasks
     .filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
@@ -135,18 +143,21 @@ export default function Dashboard() {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  // Kanban : ne garde que les tâches du mois en cours
   const kanbanTasks = filteredTasks.filter((t) => {
     if (!t.dueDate) return false;
     const d = new Date(t.dueDate);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   });
 
+  // Répartit les tâches du mois dans 3 colonnes par statut
   const kanbanColumns = {
     'À faire': kanbanTasks.filter((t) => t.status === 'TODO'),
     'En cours': kanbanTasks.filter((t) => t.status === 'IN_PROGRESS'),
     'Terminées': kanbanTasks.filter((t) => t.status === 'DONE'),
   };
 
+  // Vue Projets : regroupe les tâches par projet et trie par échéance la plus proche
   const projectsWithTasks = (() => {
     const map = {};
     filteredTasks.forEach((t) => {
@@ -170,6 +181,7 @@ export default function Dashboard() {
     });
   })();
 
+  // Redirige vers la page du projet quand on clique sur "Voir"
   const handleViewTask = (task) => {
     if (task.project?.id) {
       router.push(`/projects/${task.project.id}`);

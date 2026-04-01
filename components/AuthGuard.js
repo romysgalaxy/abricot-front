@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
+// Protège les pages privées : redirige vers /login si l'utilisateur n'est pas connecté
 export function PrivateGuard({ children }) {
   const { token, loading } = useAuth();
   const router = useRouter();
@@ -18,6 +19,7 @@ export function PrivateGuard({ children }) {
   return children;
 }
 
+// Protège les pages publiques (login/signup) : redirige vers /dashboard si déjà connecté
 export function PublicGuard({ children }) {
   const { token, loading } = useAuth();
   const router = useRouter();

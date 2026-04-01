@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { updateProfile, updatePassword } from '../../../services/api';
 import styles from './Account.module.css';
 
+// Page Mon Compte : modification du profil (nom, email) et du mot de passe
 export default function Account() {
   const { user, setUser, logout } = useAuth();
 
@@ -21,6 +22,7 @@ export default function Account() {
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Pré-remplit les champs avec les données actuelles de l'utilisateur
   useEffect(() => {
     if (user) {
       setName(user.name || '');
@@ -28,6 +30,7 @@ export default function Account() {
     }
   }, [user]);
 
+  // Envoie la mise à jour du profil à l'API et met à jour le contexte auth
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setProfileError('');
@@ -44,6 +47,7 @@ export default function Account() {
     }
   };
 
+  // Vérifie la correspondance des mots de passe puis envoie le changement à l'API
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     setPasswordError('');

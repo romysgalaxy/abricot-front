@@ -8,6 +8,7 @@ import CreateProjectModal from '../../../../components/CreateProjectModal';
 import CreateTaskModal from '../../../../components/CreateTaskModal';
 import styles from './SingleProject.module.css';
 
+// Correspondance des statuts techniques vers leurs labels en français
 const STATUS_MAP = {
   'TODO': 'À faire',
   'IN_PROGRESS': 'En cours',
@@ -15,6 +16,7 @@ const STATUS_MAP = {
   'CANCELLED': 'Annulée',
 };
 
+// Extrait les initiales d'un utilisateur (pour les avatars)
 function getInitials(user) {
   if (user.name) {
     return user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -22,12 +24,14 @@ function getInitials(user) {
   return user.email.slice(0, 2).toUpperCase();
 }
 
+// Formate une date ISO en format français (ex: "5 avril")
 function formatDate(dateStr) {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 }
 
+// Badge coloré affichant le statut d'une tâche
 function StatusBadge({ status }) {
   const classMap = {
     'TODO': 'sp-status--todo',
@@ -38,12 +42,14 @@ function StatusBadge({ status }) {
   return <span className={`${styles['sp-status']} ${styles[classMap[status]] || ''}`}>{STATUS_MAP[status] || status}</span>;
 }
 
+// Formate une date avec heure (pour les commentaires)
 function formatDateTime(dateStr) {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+// Composant d'une tâche : affiche les infos, le menu d'actions (3 points) et les commentaires
 function TaskItem({ task, projectId, userRole, onEdit, onDelete, onCommentAdded }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -54,6 +60,7 @@ function TaskItem({ task, projectId, userRole, onEdit, onDelete, onCommentAdded 
   const [submittingComment, setSubmittingComment] = useState(false);
   const menuRef = React.useRef(null);
 
+  // Ferme le menu dropdown quand on clique en dehors
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -239,6 +246,7 @@ function TaskItem({ task, projectId, userRole, onEdit, onDelete, onCommentAdded 
   );
 }
 
+// Page détail d'un projet : contributeurs, tâches, filtres et gestion des permissions
 export default function SingleProject() {
   const { id } = useParams();
   const router = useRouter();
@@ -258,6 +266,7 @@ export default function SingleProject() {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const statusFilterRef = React.useRef(null);
 
+  // Ferme le dropdown de filtre statut quand on clique en dehors
   useEffect(() => {
     function handleClickOutside(e) {
       if (statusFilterRef.current && !statusFilterRef.current.contains(e.target)) {
@@ -268,6 +277,7 @@ export default function SingleProject() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Charge le projet, ses contributeurs et les membres assignables aux tâches
   const loadProject = useCallback(async () => {
     try {
       const data = await getProject(id);
@@ -292,6 +302,7 @@ export default function SingleProject() {
     }
   }, [id]);
 
+  // Charge toutes les tâches du projet
   const loadTasks = useCallback(async () => {
     try {
       const data = await getTasks(id);
@@ -306,16 +317,19 @@ export default function SingleProject() {
     loadTasks();
   }, [loadProject, loadTasks]);
 
+  // Filtre les tâches par recherche textuelle et par statut sélectionné
   const filteredTasks = tasks.filter((t) => {
     const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || t.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
+  // Détermine les permissions de l'utilisateur : owner (suppression projet), admin (édition projet)
   const isOwner = project?.owner?.id === currentUser?.id;
-  const userRole = project?.userRole || null;
+  const userRole = project?.userRole || null; // "ADMIN" ou "CONTRIBUTOR" (retourné par l'API)
   const isAdmin = userRole === 'ADMIN';
 
+  // Supprime le projet et redirige vers la liste des projets
   const handleDeleteProject = async () => {
     setDeleting(true);
     try {
