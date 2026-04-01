@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getProject, getTasks, deleteProject, deleteTask } from '../../../../services/api';
+import { getProject, getTasks, deleteProject, deleteTask, createComment } from '../../../../services/api';
 import { useAuth } from '../../../../context/AuthContext';
 import CreateProjectModal from '../../../../components/CreateProjectModal';
 import CreateTaskModal from '../../../../components/CreateTaskModal';
@@ -44,11 +44,14 @@ function formatDateTime(dateStr) {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-function TaskItem({ task, onEdit, onDelete }) {
+function TaskItem({ task, projectId, onEdit, onDelete, onCommentAdded }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [commentContent, setCommentContent] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
   const menuRef = React.useRef(null);
 
   useEffect(() => {
@@ -107,6 +110,12 @@ function TaskItem({ task, onEdit, onDelete }) {
             <div className={styles['sp-task-dropdown']}>
               <button
                 className={styles['sp-task-dropdown-item']}
+                onClick={() => { setMenuOpen(false); setShowCommentForm(true); setCommentsOpen(true); }}
+              >
+                Commenter
+              </button>
+              <button
+                className={styles['sp-task-dropdown-item']}
                 onClick={() => { setMenuOpen(false); onEdit(task); }}
               >
                 Modifier
@@ -132,7 +141,7 @@ function TaskItem({ task, onEdit, onDelete }) {
       </div>
       {commentsOpen && (
         <div className={styles['sp-comments-list']}>
-          {comments.length === 0 ? (
+          {comments.length === 0 && !showCommentForm ? (
             <p className={styles['sp-comments-empty']}>Aucun commentaire</p>
           ) : (
             comments.map((comment) => (
@@ -145,6 +154,53 @@ function TaskItem({ task, onEdit, onDelete }) {
                 <p className={styles['sp-comment-content']}>{comment.content}</p>
               </div>
             ))
+          )}
+          {showCommentForm && (
+            <form
+              className={styles['sp-comment-form']}
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!commentContent.trim()) return;
+                setSubmittingComment(true);
+                try {
+                  await createComment(projectId, task.id, commentContent.trim());
+                  setCommentContent('');
+                  setShowCommentForm(false);
+                  if (onCommentAdded) onCommentAdded();
+                } catch (err) {
+                  console.error(err);
+                } finally {
+                  setSubmittingComment(false);
+                }
+              }}
+            >
+              <textarea
+                className={styles['sp-comment-input']}
+                placeholder="Écrire un commentaire..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                rows={3}
+                maxLength={2000}
+                autoFocus
+              />
+              <div className={styles['sp-comment-form-actions']}>
+                <button
+                  type="button"
+                  className={styles['sp-comment-cancel']}
+                  onClick={() => { setShowCommentForm(false); setCommentContent(''); }}
+                  disabled={submittingComment}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className={styles['sp-comment-submit']}
+                  disabled={submittingComment || !commentContent.trim()}
+                >
+                  {submittingComment ? 'Envoi...' : 'Envoyer'}
+                </button>
+              </div>
+            </form>
           )}
         </div>
       )}
@@ -350,8 +406,10 @@ export default function SingleProject() {
             <TaskItem
               key={task.id}
               task={task}
+              projectId={id}
               onEdit={(t) => { setEditingTask(t); setShowTaskModal(true); }}
               onDelete={async (taskId) => { await deleteTask(id, taskId); loadTasks(); }}
+              onCommentAdded={loadTasks}
             />
           ))}
         </div>

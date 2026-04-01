@@ -190,6 +190,17 @@ export async function deleteTask(projectId, taskId) {
   return data.data;
 }
 
+export async function createComment(projectId, taskId, content) {
+  const res = await fetch(`${PROJECTS_URL}/${projectId}/tasks/${taskId}/comments`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ content }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur lors de la création du commentaire');
+  return data.data;
+}
+
 export async function getTasks(projectId) {
   const res = await fetch(`${PROJECTS_URL}/${projectId}/tasks`, {
     headers: getAuthHeaders(),
