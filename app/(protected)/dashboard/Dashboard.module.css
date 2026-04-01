@@ -250,6 +250,35 @@
   background-color: #333;
 }
 
+/* Project Cards */
+.project-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px 24px;
+  transition: box-shadow 0.2s;
+}
+
+.project-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.project-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.project-card-info {
+  flex: 1;
+}
+
+.project-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 10px;
+}
+
 /* Kanban View */
 .kanban-month-label {
   font-size: 15px;

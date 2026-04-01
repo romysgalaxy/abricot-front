@@ -147,6 +147,29 @@ export default function Dashboard() {
     'Terminées': kanbanTasks.filter((t) => t.status === 'DONE'),
   };
 
+  const projectsWithTasks = (() => {
+    const map = {};
+    filteredTasks.forEach((t) => {
+      if (!t.project?.id) return;
+      if (!map[t.project.id]) {
+        map[t.project.id] = { project: t.project, tasks: [], earliestDue: null };
+      }
+      map[t.project.id].tasks.push(t);
+      if (t.dueDate) {
+        const d = new Date(t.dueDate);
+        if (!map[t.project.id].earliestDue || d < map[t.project.id].earliestDue) {
+          map[t.project.id].earliestDue = d;
+        }
+      }
+    });
+    return Object.values(map).sort((a, b) => {
+      if (!a.earliestDue && !b.earliestDue) return 0;
+      if (!a.earliestDue) return 1;
+      if (!b.earliestDue) return -1;
+      return a.earliestDue - b.earliestDue;
+    });
+  })();
+
   const handleViewTask = (task) => {
     if (task.project?.id) {
       router.push(`/projects/${task.project.id}`);
@@ -178,9 +201,16 @@ export default function Dashboard() {
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.5"/><path d="M2 6H14" stroke="currentColor" strokeWidth="1.5"/><path d="M5 1V4" stroke="currentColor" strokeWidth="1.5"/><path d="M11 1V4" stroke="currentColor" strokeWidth="1.5"/></svg>
           Kanban
         </button>
+        <button
+          className={`${styles['view-toggle-btn']} ${view === 'projets' ? styles['view-toggle-btn--active'] : ''}`}
+          onClick={() => setView('projets')}
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1 4L1 13C1 13.5523 1.44772 14 2 14H14C14.5523 14 15 13.5523 15 13V6C15 5.44772 14.5523 5 14 5H8L6.5 3H2C1.44772 3 1 3.44772 1 4Z" stroke="currentColor" strokeWidth="1.5"/></svg>
+          Projets
+        </button>
       </div>
 
-      {view === 'liste' ? (
+      {view === 'liste' && (
         <div className={styles['task-list-container']}>
           <div className={styles['task-list-header']}>
             <div>
@@ -207,25 +237,67 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      ) : (
+      )}
+
+      {view === 'kanban' && (
         <div>
           <p className={styles['kanban-month-label']}>
             {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
           </p>
           <div className={styles['kanban-board']}>
-          {Object.entries(kanbanColumns).map(([columnName, columnTasks]) => (
-            <div key={columnName} className={styles['kanban-column']}>
-              <div className={styles['kanban-column-header']}>
-                <h2 className={styles['kanban-column-title']}>{columnName}</h2>
-                <span className={styles['kanban-column-count']}>{columnTasks.length}</span>
+            {Object.entries(kanbanColumns).map(([columnName, columnTasks]) => (
+              <div key={columnName} className={styles['kanban-column']}>
+                <div className={styles['kanban-column-header']}>
+                  <h2 className={styles['kanban-column-title']}>{columnName}</h2>
+                  <span className={styles['kanban-column-count']}>{columnTasks.length}</span>
+                </div>
+                <div className={styles['kanban-column-cards']}>
+                  {columnTasks.map((task) => (
+                    <TaskCardKanban key={task.id} task={task} onView={handleViewTask} />
+                  ))}
+                </div>
               </div>
-              <div className={styles['kanban-column-cards']}>
-                {columnTasks.map((task) => (
-                  <TaskCardKanban key={task.id} task={task} onView={handleViewTask} />
-                ))}
-              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {view === 'projets' && (
+        <div className={styles['task-list-container']}>
+          <div className={styles['task-list-header']}>
+            <div>
+              <h2 className={styles['task-list-title']}>Mes projets</h2>
+              <p className={styles['task-list-subtitle']}>Projets avec des tâches assignées, par urgence</p>
             </div>
-          ))}
+          </div>
+          <div className={styles['task-list']}>
+            {projectsWithTasks.length === 0 && (
+              <p className={styles['task-list-empty']}>Aucun projet avec des tâches assignées</p>
+            )}
+            {projectsWithTasks.map(({ project, tasks: projectTasks, earliestDue }) => (
+              <div key={project.id} className={styles['project-card']}>
+                <div className={styles['project-card-content']}>
+                  <div className={styles['project-card-info']}>
+                    <h3 className={styles['project-card-name']}>{project.name}</h3>
+                    <div className={styles['task-card-list-meta']}>
+                      <span className={styles['meta-item']}>
+                        {projectTasks.length} tâche{projectTasks.length > 1 ? 's' : ''} assignée{projectTasks.length > 1 ? 's' : ''}
+                      </span>
+                      {earliestDue && (
+                        <>
+                          <span className={styles['meta-separator']}>|</span>
+                          <span className={styles['meta-item']}>
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="#999" strokeWidth="1.5"/><path d="M2 6H14" stroke="#999" strokeWidth="1.5"/><path d="M5 1V4" stroke="#999" strokeWidth="1.5"/><path d="M11 1V4" stroke="#999" strokeWidth="1.5"/></svg>
+                            Prochaine échéance : {formatDate(earliestDue.toISOString())}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <button className={styles['btn-voir']} onClick={() => router.push(`/projects/${project.id}`)}>Voir</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
