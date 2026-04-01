@@ -254,6 +254,19 @@ export default function SingleProject() {
   const [editingTask, setEditingTask] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const statusFilterRef = React.useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (statusFilterRef.current && !statusFilterRef.current.contains(e.target)) {
+        setStatusDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadProject = useCallback(async () => {
     try {
@@ -293,9 +306,11 @@ export default function SingleProject() {
     loadTasks();
   }, [loadProject, loadTasks]);
 
-  const filteredTasks = tasks.filter((t) =>
-    t.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTasks = tasks.filter((t) => {
+    const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || t.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const isOwner = project?.owner?.id === currentUser?.id;
   const userRole = project?.userRole || null;
@@ -383,11 +398,29 @@ export default function SingleProject() {
                 Calendrier
               </button>
             </div>
-            <div className={styles['sp-filter-status']}>
-              <span>Statut</span>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
+            <div className={styles['sp-filter-status-wrapper']} ref={statusFilterRef}>
+              <div
+                className={`${styles['sp-filter-status']}${statusFilter !== 'ALL' ? ` ${styles['sp-filter-status--active']}` : ''}`}
+                onClick={() => setStatusDropdownOpen((prev) => !prev)}
+              >
+                <span>{statusFilter === 'ALL' ? 'Statut' : STATUS_MAP[statusFilter]}</span>
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" className={statusDropdownOpen ? styles['sp-comments-arrow--open'] : ''}>
+                  <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </div>
+              {statusDropdownOpen && (
+                <div className={styles['sp-filter-dropdown']}>
+                  {[{ value: 'ALL', label: 'Tous' }, { value: 'TODO', label: 'À faire' }, { value: 'IN_PROGRESS', label: 'En cours' }, { value: 'DONE', label: 'Terminée' }, { value: 'CANCELLED', label: 'Annulée' }].map((opt) => (
+                    <button
+                      key={opt.value}
+                      className={`${styles['sp-filter-dropdown-item']}${statusFilter === opt.value ? ` ${styles['sp-filter-dropdown-item--active']}` : ''}`}
+                      onClick={() => { setStatusFilter(opt.value); setStatusDropdownOpen(false); }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className={styles['search-box']}>
               <input
