@@ -132,10 +132,19 @@ export default function Dashboard() {
       return new Date(a.dueDate) - new Date(b.dueDate);
     });
 
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const kanbanTasks = filteredTasks.filter((t) => {
+    if (!t.dueDate) return false;
+    const d = new Date(t.dueDate);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+
   const kanbanColumns = {
-    'À faire': filteredTasks.filter((t) => t.status === 'TODO'),
-    'En cours': filteredTasks.filter((t) => t.status === 'IN_PROGRESS'),
-    'Terminées': filteredTasks.filter((t) => t.status === 'DONE'),
+    'À faire': kanbanTasks.filter((t) => t.status === 'TODO'),
+    'En cours': kanbanTasks.filter((t) => t.status === 'IN_PROGRESS'),
+    'Terminées': kanbanTasks.filter((t) => t.status === 'DONE'),
   };
 
   const handleViewTask = (task) => {
@@ -199,7 +208,11 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className={styles['kanban-board']}>
+        <div>
+          <p className={styles['kanban-month-label']}>
+            {now.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+          </p>
+          <div className={styles['kanban-board']}>
           {Object.entries(kanbanColumns).map(([columnName, columnTasks]) => (
             <div key={columnName} className={styles['kanban-column']}>
               <div className={styles['kanban-column-header']}>
@@ -213,6 +226,7 @@ export default function Dashboard() {
               </div>
             </div>
           ))}
+          </div>
         </div>
       )}
       <CreateProjectModal
