@@ -6,6 +6,7 @@ import { getProject, getTasks, deleteProject, deleteTask, createComment } from '
 import { useAuth } from '../../../../context/AuthContext';
 import CreateProjectModal from '../../../../components/CreateProjectModal';
 import CreateTaskModal from '../../../../components/CreateTaskModal';
+import GenerateTasksModal from '../../../../components/GenerateTasksModal';
 import styles from './SingleProject.module.css';
 
 // Correspondance des statuts techniques vers leurs labels en français
@@ -262,6 +263,7 @@ export default function SingleProject() {
   const [editingTask, setEditingTask] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const statusFilterRef = React.useRef(null);
@@ -361,7 +363,7 @@ export default function SingleProject() {
         </div>
         <div className={styles['sp-actions']}>
           <button className={styles['btn-create-task']} onClick={() => { setEditingTask(null); setShowTaskModal(true); }}>Créer une tâche</button>
-          <button className={styles['btn-ia']}>
+          <button className={styles['btn-ia']} onClick={() => setShowGenerateModal(true)}>
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M8 1L9.5 6L15 8L9.5 10L8 15L6.5 10L1 8L6.5 6L8 1Z" fill="currentColor"/>
             </svg>
@@ -472,6 +474,15 @@ export default function SingleProject() {
         onClose={() => setShowEditModal(false)}
         onCreated={() => { loadProject(); loadTasks(); }}
         project={project}
+      />
+
+      <GenerateTasksModal
+        isOpen={showGenerateModal}
+        onClose={() => setShowGenerateModal(false)}
+        onCreated={loadTasks}
+        projectId={id}
+        projectName={project?.name}
+        projectDescription={project?.description}
       />
 
       <CreateTaskModal
