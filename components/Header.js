@@ -39,10 +39,7 @@ function Header() {
     <header className={styles['header']}>
       <div className={styles['header-content']}>
         <img src="/Logo.png" alt="Abricot" className={styles['header-logo']} />
-        <nav
-          className={`${styles['header-nav']} ${isMenuOpen ? styles['header-nav--open'] : ''}`}
-          aria-hidden={!isMenuOpen ? 'true' : undefined}
-        >
+        <nav className={`${styles['header-nav']} ${isMenuOpen ? styles['header-nav--open'] : ''}`}>
           <Link
             href="/dashboard"
             className={`${styles['nav-item']} ${currentPath === '/dashboard' ? styles['nav-item--active'] : ''}`}
