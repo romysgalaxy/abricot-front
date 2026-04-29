@@ -1,25 +1,27 @@
+/* Mobile first */
 .projects {
   max-width: 1300px;
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 24px 16px;
 }
 
 .projects-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 32px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .projects-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 }
 
 .projects-subtitle {
-  font-size: 15px;
+  font-size: 14px;
   color: #666;
   margin: 0;
 }
@@ -27,6 +29,7 @@
 .btn-create {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background-color: #1a1a1a;
   color: #fff;
@@ -38,6 +41,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.2s;
+  width: 100%;
 }
 
 .btn-create:hover {
@@ -47,8 +51,8 @@
 /* Projects Grid */
 .projects-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 /* Project Card */
@@ -56,7 +60,7 @@
   border: 1px solid #e5e5e5;
   background-color: #fff;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   cursor: pointer;
   transition: box-shadow 0.2s;
 }
@@ -143,6 +147,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .team-avatar {
@@ -195,4 +200,52 @@
   font-size: 14px;
   padding: 40px 0;
   margin: 0;
+}
+
+/* Tablet ≥ 768px */
+@media (min-width: 768px) {
+  .projects {
+    padding: 32px 24px;
+  }
+
+  .projects-header {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .btn-create {
+    width: auto;
+  }
+
+  .project-card {
+    padding: 24px;
+  }
+
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Desktop ≥ 1024px */
+@media (min-width: 1024px) {
+  .projects {
+    padding: 40px 24px;
+  }
+
+  .projects-title {
+    font-size: 28px;
+    margin: 0 0 8px;
+  }
+
+  .projects-subtitle {
+    font-size: 15px;
+  }
+
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

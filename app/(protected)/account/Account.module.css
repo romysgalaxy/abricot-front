@@ -1,27 +1,28 @@
+/* Mobile first */
 .account {
   max-width: 1300px;
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 24px 16px;
 }
 
 .account-card {
   background-color: #fff;
   border: 1px solid #e5e5e5;
   border-radius: 12px;
-  padding: 32px 40px;
+  padding: 20px;
 }
 
 .account-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0 0 6px;
 }
 
 .account-subtitle {
-  font-size: 15px;
+  font-size: 14px;
   color: #999;
-  margin: 0 0 32px;
+  margin: 0 0 24px;
 }
 
 .account-form {
@@ -63,7 +64,7 @@
 }
 
 .account-submit {
-  align-self: flex-start;
+  align-self: stretch;
   margin-top: 8px;
   background-color: #1a1a1a;
   color: #fff;
@@ -98,7 +99,7 @@
 }
 
 .account-logout {
-  align-self: flex-start;
+  align-self: stretch;
   background-color: #dc2626;
   color: #fff;
   border: none;
@@ -112,4 +113,40 @@
 
 .account-logout:hover {
   background-color: #b91c1c;
+}
+
+/* Tablet ≥ 768px */
+@media (min-width: 768px) {
+  .account {
+    padding: 32px 24px;
+  }
+
+  .account-card {
+    padding: 28px 32px;
+  }
+
+  .account-title {
+    font-size: 20px;
+  }
+
+  .account-subtitle {
+    font-size: 15px;
+    margin: 0 0 32px;
+  }
+
+  .account-submit,
+  .account-logout {
+    align-self: flex-start;
+  }
+}
+
+/* Desktop ≥ 1024px */
+@media (min-width: 1024px) {
+  .account {
+    padding: 40px 24px;
+  }
+
+  .account-card {
+    padding: 32px 40px;
+  }
 }

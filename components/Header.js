@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
@@ -16,14 +16,33 @@ function getInitials(user) {
 function Header() {
   const currentPath = usePathname();
   const { user } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const initials = user ? getInitials(user) : '??';
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [currentPath]);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
 
   return (
     <header className={styles['header']}>
       <div className={styles['header-content']}>
         <img src="/Logo.png" alt="Abricot" className={styles['header-logo']} />
-        <nav className={styles['header-nav']}>
+        <nav
+          className={`${styles['header-nav']} ${isMenuOpen ? styles['header-nav--open'] : ''}`}
+          aria-hidden={!isMenuOpen ? 'true' : undefined}
+        >
           <Link
             href="/dashboard"
             className={`${styles['nav-item']} ${currentPath === '/dashboard' ? styles['nav-item--active'] : ''}`}
@@ -46,11 +65,31 @@ function Header() {
             Projets
           </Link>
         </nav>
-        <Link
-          href="/account"
-          className={`${styles['header-avatar']} ${currentPath === '/account' ? styles['header-avatar--active'] : ''}`}
-        >{initials}</Link>
+        <div className={styles['header-right']}>
+          <Link
+            href="/account"
+            className={`${styles['header-avatar']} ${currentPath === '/account' ? styles['header-avatar--active'] : ''}`}
+          >{initials}</Link>
+          <button
+            type="button"
+            className={`${styles['burger-btn']} ${isMenuOpen ? styles['burger-btn--open'] : ''}`}
+            onClick={() => setIsMenuOpen((v) => !v)}
+            aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={isMenuOpen}
+          >
+            <span className={styles['burger-line']} />
+            <span className={styles['burger-line']} />
+            <span className={styles['burger-line']} />
+          </button>
+        </div>
       </div>
+      {isMenuOpen && (
+        <div
+          className={styles['backdrop']}
+          onClick={() => setIsMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
     </header>
   );
 }
