@@ -73,6 +73,15 @@ function CreateTaskModal({ isOpen, onClose, onCreated, projectId, projectMembers
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleEscape(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   const members = projectMembers || [];
 
   const availableMembers = members.filter(

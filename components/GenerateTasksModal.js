@@ -34,6 +34,15 @@ function GenerateTasksModal({ isOpen, onClose, onCreated, projectId, projectName
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleEscape(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   // Envoi du prompt à l'API de génération de tâches
   const handleSend = async (e) => {
     e.preventDefault();
@@ -242,7 +251,7 @@ function GenerateTasksModal({ isOpen, onClose, onCreated, projectId, projectName
                       /* Mode lecture : affichage de la tâche avec boutons modifier/supprimer */
                       <>
                         <div className={styles['task-content']}>
-                          <h4 className={styles['task-title']}>{task.title}</h4>
+                          <h3 className={styles['task-title']}>{task.title}</h3>
                           <p className={styles['task-description']}>{task.description}</p>
                         </div>
                         <div className={styles['task-actions']}>

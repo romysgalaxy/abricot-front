@@ -69,6 +69,15 @@ function CreateProjectModal({ isOpen, onClose, onCreated, project }) {
   }, []);
 
   useEffect(() => {
+    if (!isOpen) return;
+    function handleEscape(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
     if (searchQuery.length < 2) return;
 
     if (searchTimeout.current) clearTimeout(searchTimeout.current);

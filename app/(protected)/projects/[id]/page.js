@@ -72,6 +72,15 @@ function TaskItem({ task, projectId, userRole, onEdit, onDelete, onCommentAdded 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (!showDeleteConfirm) return;
+    function handleEscape(e) {
+      if (e.key === 'Escape' && !deleting) setShowDeleteConfirm(false);
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showDeleteConfirm, deleting]);
+
   const comments = task.comments || [];
 
   return (
@@ -267,6 +276,15 @@ export default function SingleProject() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const statusFilterRef = React.useRef(null);
+
+  useEffect(() => {
+    if (!showDeleteConfirm) return;
+    function handleEscape(e) {
+      if (e.key === 'Escape' && !deleting) setShowDeleteConfirm(false);
+    }
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showDeleteConfirm, deleting]);
 
   // Ferme le dropdown de filtre statut quand on clique en dehors
   useEffect(() => {

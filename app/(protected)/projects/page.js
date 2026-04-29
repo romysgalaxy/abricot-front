@@ -36,7 +36,7 @@ function ProjectCard({ project, onSelect }) {
 
   return (
     <div className={styles['project-card']} onClick={() => onSelect(project.id)}>
-      <h3 className={styles['project-card-name']}>{project.name}</h3>
+      <h2 className={styles['project-card-name']}>{project.name}</h2>
       <p className={styles['project-card-desc']}>{project.description || 'Aucune description'}</p>
 
       <div className={styles['project-card-progress']}>
